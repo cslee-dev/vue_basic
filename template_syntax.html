@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>template syntax</title>
+</head>
+<body>
+<section id="app">
+    <!--    주의할점. v-once 디렉티브 사용해서 일회성 보간을 사용할 수 있지만 같은 노드의 즉 자식노드들도 모두 일회성 보간처리 됨.-->
+    <div v-once>
+        다시는 변경하지 않습니다.{{msg}}
+        <p>{{msg}}</p>
+    </div>
+</section>
+<section id="app-2">
+    <p>Using mustaches : {{ rawHtml }}</p>
+    <p>Using v-html directive <span v-html="rawHtml"></span></p>
+</section>
+
+<section>
+    <!--    바인드 디렉티브는 해당 요소의 속성에 바인딩됨 -->
+    <a v-bind:href="url">aa</a>
+    <!--    DOM 이벤트 수신하는 v-on 디렉티브-->
+    <a v-on:click="doSomethig">...</a>
+    <!--    동적 전달인자(2.6부터) 기능 지원 위 v-bind:href 문법과 동일함. -->
+    <a v-bind:[href]="url">aa</a>
+    <!--    동적 전달 인자 기능 v-on:click 문법과 동일-->
+    <a v-on:[click]="doSomethig">...</a>
+    <!--
+        동적 전달인자는 null을 제외하고는 string으로 변환될 것으로 예상 합니다. 특수 값인 null은 명시적으로 바인딩을 제거하는데 사용됩니다. 그 외의 경우
+        string이 아닌 값은 경고를 출력합니다.
+        <a v-bind:['foo' + bar]="value"> ...</a>
+        위 같은 형식에는 문자상의 제약이 있습니다. 스페이스와 따옴표 같은 몇몇 문자는 HTML의 속성명으로서 적합하지 않은 문자이기 때문이다.
+        이를 피하는 방법은 계산된 속성을 사용하는 방법
+        ex)
+        var data = { someAttr : "href"};
+        ....
+        <a v-bind:[someAttr]="value"> ...</a>
+        또한 in-DOM 탬플릿을 사용할 때에 ( 탬플릿이 HTML 파일에 직접 쓰여진 경우) 브라우저가 모든 속성명을 소문자로 만드는 관계로 대문자의 사용을 피하는게
+        좋다.
+    -->
+    <!--
+        수식어는 점으로 표시되는 특수 접미사로, 디렉티브를 특별한 방법으로 바인딩 해야 함을 나타낸다.
+        예를 들어 .prevent 수식어는 트리거된 이벤트에서 event.preventDefault()를 호출하도록 v-on 디렉티브에게 알려줌
+        <form v-on:submit.prevent="onSubmit">...</form>
+    -->
+    <!--
+        v- 접두사는 템플릿의 Vue 특정 속성을 식별하기 위한 시각적인 신호 역할을 합니다. 이 기능은 Vue.js를 사용하여 기존의 마크업에
+        동적인 동작을 적용할 때 유용하지만 일부 자주 사용되는 디렉티브에 대해 너무 장황하다고 느껴질 수 있습니다. 동시에 Vue.js가 모든 템플릿을
+        관리하는 SPA를 만들 때 v-접두어의 필요성이 떨어집니다. 따라서 가장 자주 사용되는 두개의 디렉티브인 v-bind와 v-on에 대해 특별한
+        약어를 제공합니다.
+        bind 약어
+        <a :href="url"></a>
+        <a :[key]="url"></a>
+        on 약어
+        <a @click="doSomething">...</a>
+        <a @[event]="doSomething">...</a>
+        일반적인 HTML과 조금 다르게 보일 수 있지만 :와 @는 속성 이름에 유효한 문자이며 Vue.js를 지원하는 모든 브라우저는 올바르게 구문 해석 할 수 있다.
+        또한 최종 렌더링 된 마크업에는 나타나지 않습니다. 약어는 완전히 선택사항이지만 익숙해지면 편해질것이다.
+    -->
+</section>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+    // 보간법? interpolation 두 지점을 연결하는 방법을 보간법이라고 한다.
+    // 문자열 보간법
+    // 데이터 바인딩의 가장 기본 형태는 "Mustache" ( 수염?  ㅋㅋㅋ Mustache라는 템플릿 문법이 존재하는데
+    // Mustache 문법에서 구분자로 사용하는 {{ }}기호가 콧수염 모양이라서 붙인 이름이랍니다.
+    // 어쨋든 데이터 바인딩의 가장 기본 형태는 Mustache 구문 (이중 중괄호)을 사용한 텍스트 보간 (두 지점 연결)
+    // Mustache 태그는 해당 데이터 객체의 msg 속성 값으로 대체됩니다. 또한 데이터 객체의 msg 속성이 벼경될 떄 마다 갱신됩니다.
+    var data= {msg: "message"};
+    var vm = new Vue({
+        el : "#app",
+        data:data
+    })
+
+    // 이중 중괄호(mustache)는 HTML이 아닌 일반 텍스트로 데이터를 해석하기 때문에 실제 HTML을 출력하려면 v-html 디렉티브를 사용해야 합니다.
+    // span의 내용은 rawHTML로 대체됩니다. 이 때 데이터 바인딩은 무시됩니다. Vue는 문자열 기반 템플릿 엔진이 아니기 때문에
+    // v-html을 이용해 템플릿을 사용할 수 없습니다. 이와 달리 컴포넌트는 ui 재사용 및 구성을 위한 기본 단위로 사용하는 것을 추천합니다.
+    // 사용자가 제공한 콘텐츠에서 절대 사용하면 안된다. xss취약점으로 쉽게 이어질 위험한 가능성 존재
+    var data2 = {rawHtml : "<span style='color:red'>This should be red.</span>"};
+    var vm2 = new Vue({
+        el: "#app-2",
+        data:data2
+    })
+
+    // Mustaches HTMl 속성에서 사용할 수 없습니다. 대신 v-bind 디렉티브를 사용.
+    // boolean 속성을 사용할 때 단순히 true인 경우 v-bind는 조금 다르게 작동합니다.
+    // null, undefied 또는 false의 값을 가지면 disabled 속성은 렌더링된 button 엘리먼트에 포함되지 않는다. v-bind:disabled="BooelanVar"경우
+
+    // 데이터 바인딩 내에서 ( 중괄호에서 한줄 안에 ) JS모든 표현식을 지원함 if 같은 문법은 안되겠쥬~
+    // 또한 템플릿 표현식은 샌드박스 처리되서 사용자 정의는 포함 안되고 전역으로 사용 가능한 것만 사용가능함.
+
+</script>
+</body>
+</html>
